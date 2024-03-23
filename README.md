@@ -26,6 +26,7 @@ git push -u origin master
 # you can find the environment variables defined in src/main/java/com/example/DatabaseConfig.java file
 
 ```
+<img src="https://i.imgur.com/P9B13Wd.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
 
 *****
 
@@ -46,8 +47,13 @@ docker run -p 3306:3306 \
 -e MYSQL_PASSWORD=adminpass \
 -d mysql mysqld --default-authentication-plugin=mysql_native_password
 
+<img src="https://i.imgur.com/CixuJqT.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
 # create java jar file
 gradle build
+
+<img src="https://i.imgur.com/cTsc9Pu.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
 
 # set env vars in Terminal for the java application (these will read in DatabaseConfig.java)
 export DB_USER=admin
@@ -55,10 +61,14 @@ export DB_PWD=adminpass
 export DB_SERVER=localhost
 export DB_NAME=team-member-projects
 
+<img src="https://i.imgur.com/CIhA6fE.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+
 # start java application
 java -jar build/libs/docker-exercises-project-1.0-SNAPSHOT.jar
 
 ```
+<img src="https://i.imgur.com/ai9fJaD.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
 
 *****
 
@@ -81,6 +91,10 @@ localhost:8083
 * root:rootpass
 
 ```
+<img src="https://i.imgur.com/K0xCaLP.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<img src="https://i.imgur.com/kVhXFb0.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
 
 *****
 
@@ -119,10 +133,14 @@ volumes:
 
 ```
 
+<img src="https://i.imgur.com/ojXdiDj.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+
 **Start containers with docker-compose**
 ```sh
 docker-compose -f docker-compose.yaml up    
 ```
+<img src="https://i.imgur.com/jlCDNSp.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
 
 *****
 
@@ -140,6 +158,7 @@ WORKDIR /opt/app
 CMD ["java", "-jar", "docker-exercises-project-1.0-SNAPSHOT.jar"]
 
 ```
+<img src="https://i.imgur.com/RHFkpkF.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
 
 *****
 
@@ -158,5 +177,6 @@ docker build -t {repo-name}/java-app:1.0-SNAPSHOT .
 docker push {repo-name}/java-app:1.0-SNAPSHOT
 
 ```
+
 ****
 

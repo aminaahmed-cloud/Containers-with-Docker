@@ -177,6 +177,141 @@ docker build -t {repo-name}/java-app:1.0-SNAPSHOT .
 docker push {repo-name}/java-app:1.0-SNAPSHOT
 
 ```
+<img src="https://i.imgur.com/HhxAGU4.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<img src="https://i.imgur.com/qun3Osp.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<img src="https://i.imgur.com/efSKTk8.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
 
 ****
 
+## Step 6: Add application to docker-compose
+
+Update the docker-compose file to include your Java application's Docker image. Configure all necessary environment variables. Ensure that the application and MySQL containers use environment variables for configuration.
+
+**docker-compose-with-app.yaml**
+
+```sh
+version: '3'
+services:
+  my-java-app:
+    image: java-mysql-app:1.0 # specify the full image name with repository name
+    environment:
+      - DB_USER=${DB_USER}
+      - DB_PWD=${DB_PWD}
+      - DB_SERVER=${DB_SERVER}
+      - DB_NAME=${DB_NAME}
+    ports:
+    - 8080:8080
+    container_name: my-java-app
+    depends_on:
+      - mysql
+  mysql:
+    image: mysql
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PWD}
+    volumes:
+    - mysql-data:/var/lib/mysql
+    container_name: mysql
+    command: --default-authentication-plugin=mysql_native_password
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 8083:80
+    environment:
+      - PMA_HOST=${PMA_HOST}
+      - PMA_PORT=${PMA_PORT}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    container_name: phpmyadmin
+    depends_on:
+      - mysql
+volumes:
+  mysql-data:
+    driver: local
+
+```
+
+<img src="https://i.imgur.com/ezBnFLj.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+**steps:**
+```sh
+# set all needed environment variables
+export DB_USER=admin
+export DB_PWD=adminpass
+export DB_SERVER=mysql
+export DB_NAME=team-member-projects
+
+export MYSQL_ROOT_PASSWORD=rootpass
+
+export PMA_HOST=mysql
+export PMA_PORT=3306
+
+# start all 3 containers 
+docker-compose -f docker-compose-with-app.yaml up    
+```
+<img src="https://i.imgur.com/tex9DwD.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+<img src="https://i.imgur.com/vqGEDpe.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+
+*****
+
+## Step 7: Run application on server with docker-compose
+
+Finally your docker-compose file is completed and you want to run your application on the server with docker-compose. For that you need to do the following:
+
+- Set insecure docker repository on server, because Nexus uses http
+- Run docker login on the server to be allowed to pull the image
+- Your application index.html has a hardcoded localhost as a HOST to send requests to the backend. You need to fix that and set the server IP address instead, because the server is going to be the host when you deploy the application on a remote server. (Don't forget to rebuild and push the image and if needed adjust the docker-compose file)
+- Copy docker-compose.yaml to the server
+- Set the needed environment variables for all containers in docker-compose
+- Run docker-compose to start all 3 containers
+
+
+
+**Dockerfile**
+
+```sh
+# on Linux server - to add an insecure docker registry, add the file /etc/docker/daemon.json with the following content
+{
+  "insecure-registries" : [ "{repo-address}:{repo-port}" ]
+}
+
+# restart docker for the configuration to take affect
+sudo service docker restart
+
+# check the insecure repository was added - last section "Insecure Registries:"
+docker info
+
+# do docker login to repo
+docker login {repo-address}:{repo-port}
+
+# change hardcoded HOST env var in src/main/resources/static/index.html file, line 48
+const HOST = "{server-ip-address}";
+
+# rebuild the application and image and push to repo
+gradle build
+docker build -t {repo-name}/java-app:1.0-SNAPSHOT .
+docker push {repo-name}/java-app:1.0-SNAPSHOT 
+
+# copy docker-compose file to remote server
+scp -i ~/.ssh/id_rsa docker-compose.yaml {server-user}:{server-ip}:/home/{server-user}
+
+# ssh into the remote server
+# set all env vars as you did in exercise 6
+# run docker compose file
+# open port 8080 on server to access java application
+```
+
+<img src="https://i.imgur.com/2VrcmOv.png" height="80%" width="80%" alt="Disk Sanitization Steps"/>
+
+
+## Step 8: Open ports
+
+Open the necessary ports on the server's firewall to allow access to the application from the browser. Test access from the browser to ensure everything is working as expected.
